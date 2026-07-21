@@ -48,10 +48,10 @@ void FFlax_exporterModule::StartupModule()
 		FExecuteAction::CreateRaw(this, &FFlax_exporterModule::PluginButtonClicked),
 		FCanExecuteAction());
 
-	PluginCommands->MapAction(
-		FFlax_exporterCommands::Get().GenerateMaterialColor,
-		FExecuteAction::CreateRaw(this,&FFlax_exporterModule::GenerateMaterialColorButtonClicked),
-		FCanExecuteAction());
+	//PluginCommands->MapAction(
+	//	FFlax_exporterCommands::Get().GenerateMaterialColor,
+	//	FExecuteAction::CreateRaw(this,&FFlax_exporterModule::GenerateMaterialColorButtonClicked),
+	//	FCanExecuteAction());
 
 	UToolMenus::RegisterStartupCallback(
 		FSimpleMulticastDelegate::FDelegate::CreateRaw(
@@ -91,32 +91,32 @@ void FFlax_exporterModule::PluginButtonClicked()
 	ExportScene(World);
 }
 
-void FFlax_exporterModule::GenerateMaterialColorButtonClicked()
-{
-	FContentBrowserModule& ContentBrowserModule =
-		FModuleManager::LoadModuleChecked<FContentBrowserModule>("ContentBrowser");
-
-	TArray<FAssetData> SelectedAssets;
-	ContentBrowserModule.Get().GetSelectedAssets(SelectedAssets);
-
-	if (SelectedAssets.Num() == 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No asset selected."));
-		return;
-	}
-
-	UObject* Asset = SelectedAssets[0].GetAsset();
-
-	if (!Asset)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Unable to load selected asset."));
-		return;
-	}
-
-	FString Color = MatGraphTools::GetColor(Asset);
-
-	UE_LOG(LogTemp, Log, TEXT("Color : %s"), *Color);
-}
+//void FFlax_exporterModule::GenerateMaterialColorButtonClicked()
+//{
+//	FContentBrowserModule& ContentBrowserModule =
+//		FModuleManager::LoadModuleChecked<FContentBrowserModule>("ContentBrowser");
+//
+//	TArray<FAssetData> SelectedAssets;
+//	ContentBrowserModule.Get().GetSelectedAssets(SelectedAssets);
+//
+//	if (SelectedAssets.Num() == 0)
+//	{
+//		UE_LOG(LogTemp, Warning, TEXT("No asset selected."));
+//		return;
+//	}
+//
+//	UObject* Asset = SelectedAssets[0].GetAsset();
+//
+//	if (!Asset)
+//	{
+//		UE_LOG(LogTemp, Warning, TEXT("Unable to load selected asset."));
+//		return;
+//	}
+//
+//	FString Color = MatGraphTools::GetColor(Asset);
+//
+//	UE_LOG(LogTemp, Log, TEXT("Color : %s"), *Color);
+//}
 
 FString FFlax_exporterModule::ChooseExportFolder()
 {
@@ -407,7 +407,7 @@ void FFlax_exporterModule::RegisterMenus()
 		UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Window");
 		FToolMenuSection& Section = Menu->FindOrAddSection("WindowLayout");
 		Section.AddMenuEntryWithCommandList(FFlax_exporterCommands::Get().PluginAction, PluginCommands);
-		Section.AddMenuEntryWithCommandList(FFlax_exporterCommands::Get().GenerateMaterialColor, PluginCommands);
+		//Section.AddMenuEntryWithCommandList(FFlax_exporterCommands::Get().GenerateMaterialColor, PluginCommands);
 	}
 
 	{
@@ -419,13 +419,13 @@ void FFlax_exporterModule::RegisterMenus()
 				FToolMenuEntry::InitToolBarButton(
 					FFlax_exporterCommands::Get().PluginAction));
 
-		FToolMenuEntry& MaterialEntry =
-			Section.AddEntry(
-				FToolMenuEntry::InitToolBarButton(
-					FFlax_exporterCommands::Get().GenerateMaterialColor));
+		//FToolMenuEntry& MaterialEntry =
+		//	Section.AddEntry(
+		//		FToolMenuEntry::InitToolBarButton(
+		//			FFlax_exporterCommands::Get().GenerateMaterialColor));
 
 		Entry.SetCommandList(PluginCommands);
-		MaterialEntry.SetCommandList(PluginCommands);
+		//MaterialEntry.SetCommandList(PluginCommands);
 	}
 }
 
