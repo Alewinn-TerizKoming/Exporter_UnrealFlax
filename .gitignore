@@ -1,0 +1,50 @@
+# Unreal
+# Generated folders
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+Crashes/
+
+# Plugins (recursive)
+**/Binaries/
+**/Build/
+**/Intermediate/
+**/Saved/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+
+*.VC.db
+*.VC.opendb
+*.suo
+*.user
+*.userprefs
+*.opensdf
+*.sdf
+*.sln.docstates
+
+# Logs / Temporary
+*.log
+*.tmp
+*.temp
+
+# Packaging
+*.pak
+*.ucas
+*.utoc
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Keep project files
+!**/*.uproject
+!**/*.uplugin
+!**/Config/**
+!**/Content/**
+!**/Source/**
