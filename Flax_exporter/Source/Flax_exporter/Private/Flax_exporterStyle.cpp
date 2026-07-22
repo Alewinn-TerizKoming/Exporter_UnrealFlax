@@ -45,7 +45,6 @@ TSharedRef< FSlateStyleSet > FFlax_exporterStyle::Create()
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("Flax_exporter")->GetBaseDir() / TEXT("Resources"));
 
 	Style->Set("Flax_exporter.PluginAction", new IMAGE_BRUSH_SVG(TEXT("ExpFl_20_Svg"), Icon24x24));
-	//Style->Set("Flax_exporter.GenerateMaterialColor", new IMAGE_BRUSH_SVG(TEXT("PlaceholderButtonIcon"), Icon20x20));
 	return Style;
 }
 

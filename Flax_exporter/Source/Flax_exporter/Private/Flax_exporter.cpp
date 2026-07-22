@@ -48,11 +48,6 @@ void FFlax_exporterModule::StartupModule()
 		FExecuteAction::CreateRaw(this, &FFlax_exporterModule::PluginButtonClicked),
 		FCanExecuteAction());
 
-	//PluginCommands->MapAction(
-	//	FFlax_exporterCommands::Get().GenerateMaterialColor,
-	//	FExecuteAction::CreateRaw(this,&FFlax_exporterModule::GenerateMaterialColorButtonClicked),
-	//	FCanExecuteAction());
-
 	UToolMenus::RegisterStartupCallback(
 		FSimpleMulticastDelegate::FDelegate::CreateRaw(
 			this,
@@ -62,11 +57,8 @@ void FFlax_exporterModule::StartupModule()
 void FFlax_exporterModule::ShutdownModule()
 {
 	UToolMenus::UnRegisterStartupCallback(this);
-
 	UToolMenus::UnregisterOwner(this);
-
 	FFlax_exporterStyle::Shutdown();
-
 	FFlax_exporterCommands::Unregister();
 }
 
@@ -89,59 +81,6 @@ void FFlax_exporterModule::PluginButtonClicked()
 	}
 
 	ExportScene(World);
-}
-
-//void FFlax_exporterModule::GenerateMaterialColorButtonClicked()
-//{
-//	FContentBrowserModule& ContentBrowserModule =
-//		FModuleManager::LoadModuleChecked<FContentBrowserModule>("ContentBrowser");
-//
-//	TArray<FAssetData> SelectedAssets;
-//	ContentBrowserModule.Get().GetSelectedAssets(SelectedAssets);
-//
-//	if (SelectedAssets.Num() == 0)
-//	{
-//		UE_LOG(LogTemp, Warning, TEXT("No asset selected."));
-//		return;
-//	}
-//
-//	UObject* Asset = SelectedAssets[0].GetAsset();
-//
-//	if (!Asset)
-//	{
-//		UE_LOG(LogTemp, Warning, TEXT("Unable to load selected asset."));
-//		return;
-//	}
-//
-//	FString Color = MatGraphTools::GetColor(Asset);
-//
-//	UE_LOG(LogTemp, Log, TEXT("Color : %s"), *Color);
-//}
-
-FString FFlax_exporterModule::ChooseExportFolder()
-{
-	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
-
-	if (!DesktopPlatform)
-	{
-		return FString();
-	}
-
-	FString Folder;
-
-	bool bOpened = DesktopPlatform->OpenDirectoryDialog(
-		nullptr,
-		TEXT("Choose export folder"),
-		TEXT(""),
-		Folder
-	);
-
-	if (bOpened)
-	{
-		return Folder;
-	}
-
-	return FString();
 }
 
 void FFlax_exporterModule::ExportScene(UWorld* World)
@@ -198,11 +137,9 @@ void FFlax_exporterModule::ExportScene(UWorld* World)
 		Instance.Rotation = Transform.GetRotation().Rotator();
 		Instance.Scale = Transform.GetScale3D();
 		Instance.Properties = ExtractActorProperties(StaticMeshActor, MeshComponent);
-		
+
 		for (int32 i = 0; i < MeshComponent->GetNumMaterials(); i++)
 		{
-			//UMaterialInterface* Material = MeshComponent->GetMaterial(i);
-
 			UMaterialInterface* Material = nullptr;
 
 			if (MeshComponent->OverrideMaterials.IsValidIndex(i) &&
@@ -217,32 +154,10 @@ void FFlax_exporterModule::ExportScene(UWorld* World)
 
 			int32 MaterialIndex = RegisterMaterial(Material, Scene);
 			if (MaterialIndex >= 0) { Instance.Materials.Add(MaterialIndex); }
-
 		}
-
-		UE_LOG(
-			LogTemp,
-			Log,
-			TEXT("Mesh %s uses %d materials"),
-			*Mesh->GetName(),
-			Instance.Materials.Num());
 
 		Scene.MeshInstances.Add(Instance);
 	}
-
-	UE_LOG(
-		LogTemp,
-		Log,
-		TEXT("Unique meshes : %d"),
-		Scene.StaticMeshes.Num()
-	);
-
-	UE_LOG(
-		LogTemp,
-		Log,
-		TEXT("Export scene contains %d meshes"),
-		Scene.MeshInstances.Num()
-	);
 
 	const FString ExportFolder = ChooseExportFolder();
 
@@ -253,7 +168,37 @@ void FFlax_exporterModule::ExportScene(UWorld* World)
 
 	SaveScene(Scene, ExportFolder);
 	ExportStaticMeshes(Scene, ExportFolder);
+
+	UE_LOG(LogTemp,Log,TEXT("Export scene completed."));
 }
+
+FString FFlax_exporterModule::ChooseExportFolder()
+{
+	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
+
+	if (!DesktopPlatform)
+	{
+		return FString();
+	}
+
+	FString Folder;
+
+	bool bOpened = DesktopPlatform->OpenDirectoryDialog(
+		nullptr,
+		TEXT("Choose export folder"),
+		TEXT(""),
+		Folder
+	);
+
+	if (bOpened)
+	{
+		return Folder;
+	}
+
+	return FString();
+}
+
+
 
 FFlaxExportActorProperties FFlax_exporterModule::ExtractActorProperties(AStaticMeshActor* Actor, UStaticMeshComponent* MeshComponent)
 {
@@ -285,10 +230,8 @@ FFlaxExportActorProperties FFlax_exporterModule::ExtractActorProperties(AStaticM
 		break;
 	}
 
-
 	// Shadows
 	Properties.CastShadow = MeshComponent->CastShadow;
-
 
 	// Tags
 	for (const FName& Tag : Actor->Tags)
@@ -296,11 +239,9 @@ FFlaxExportActorProperties FFlax_exporterModule::ExtractActorProperties(AStaticM
 		Properties.Tags.Add(Tag.ToString());
 	}
 
-
 	// Layer
-	// Pas encore géré
+	// Not handled yet
 	Properties.Layer = TEXT("");
-
 
 	return Properties;
 }
@@ -321,7 +262,7 @@ int32 FFlax_exporterModule::RegisterMaterial(UMaterialInterface* Material,FFlaxE
 	{
 		Slot.ParentMaterial = Instance->Parent->GetPathName();
 
-		// Ajouter le parent dans la liste
+		// Add parent to the list
 		RegisterMaterial( Instance->Parent, Scene);
 	}
 
@@ -330,9 +271,7 @@ int32 FFlax_exporterModule::RegisterMaterial(UMaterialInterface* Material,FFlaxE
 
 bool FFlax_exporterModule::SaveScene(const FFlaxExportScene& Scene, const FString& ExportFolder)
 {
-	const FString SceneFilename =
-		ExportFolder / (Scene.SceneName + TEXT(".json"));
-
+	const FString SceneFilename = ExportFolder / (Scene.SceneName + TEXT(".json"));
 	return WriteSceneJson(Scene, SceneFilename);
 }
 
@@ -374,9 +313,7 @@ void FFlax_exporterModule::ExportStaticMeshes(const FFlaxExportScene& Scene, con
 	}
 }
 
-bool FFlax_exporterModule::WriteSceneJson(
-	const FFlaxExportScene& Scene,
-	const FString& Filename)
+bool FFlax_exporterModule::WriteSceneJson(const FFlaxExportScene& Scene,const FString& Filename)
 {
 	FString Json;
 
@@ -389,11 +326,7 @@ bool FFlax_exporterModule::WriteSceneJson(
 
 	if (bSaved)
 	{
-		UE_LOG(
-			LogTemp,
-			Log,
-			TEXT("Scene written to %s"),
-			*Filename);
+		UE_LOG(LogTemp,Log,TEXT("Scene written to %s"),*Filename);
 	}
 
 	return bSaved;
@@ -407,25 +340,15 @@ void FFlax_exporterModule::RegisterMenus()
 		UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Window");
 		FToolMenuSection& Section = Menu->FindOrAddSection("WindowLayout");
 		Section.AddMenuEntryWithCommandList(FFlax_exporterCommands::Get().PluginAction, PluginCommands);
-		//Section.AddMenuEntryWithCommandList(FFlax_exporterCommands::Get().GenerateMaterialColor, PluginCommands);
 	}
 
 	{
 		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar.PlayToolBar");
 		FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("PluginTools");
 
-		FToolMenuEntry& Entry =
-			Section.AddEntry(
-				FToolMenuEntry::InitToolBarButton(
-					FFlax_exporterCommands::Get().PluginAction));
-
-		//FToolMenuEntry& MaterialEntry =
-		//	Section.AddEntry(
-		//		FToolMenuEntry::InitToolBarButton(
-		//			FFlax_exporterCommands::Get().GenerateMaterialColor));
+		FToolMenuEntry& Entry = Section.AddEntry( FToolMenuEntry::InitToolBarButton( FFlax_exporterCommands::Get().PluginAction));
 
 		Entry.SetCommandList(PluginCommands);
-		//MaterialEntry.SetCommandList(PluginCommands);
 	}
 }
 

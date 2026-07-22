@@ -28,13 +28,11 @@ public:
 
 	/** Commands. */
 	void PluginButtonClicked();
-	void GenerateMaterialColorButtonClicked();
 
 private:
 
 
 	void RegisterMenus();
-	void TraceScene(UWorld* World);
 	FString ChooseExportFolder();
 
 	void ExportScene(UWorld* World);
