@@ -1,5 +1,3 @@
-// (c)GSH Generated code - do not modify, or all changes will be lost.
-
 #pragma once
 
 #include "CoreMinimal.h"
