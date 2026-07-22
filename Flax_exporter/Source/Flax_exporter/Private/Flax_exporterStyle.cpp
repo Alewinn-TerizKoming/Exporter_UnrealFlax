@@ -37,13 +37,14 @@ FName FFlax_exporterStyle::GetStyleSetName()
 
 const FVector2D Icon16x16(16.0f, 16.0f);
 const FVector2D Icon20x20(20.0f, 20.0f);
+const FVector2D Icon24x24(24.0f, 24.0f);
 
 TSharedRef< FSlateStyleSet > FFlax_exporterStyle::Create()
 {
 	TSharedRef< FSlateStyleSet > Style = MakeShareable(new FSlateStyleSet("Flax_exporterStyle"));
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("Flax_exporter")->GetBaseDir() / TEXT("Resources"));
 
-	Style->Set("Flax_exporter.PluginAction", new IMAGE_BRUSH_SVG(TEXT("PlaceholderButtonIcon"), Icon20x20));
+	Style->Set("Flax_exporter.PluginAction", new IMAGE_BRUSH_SVG(TEXT("ExpFl_20_Svg"), Icon24x24));
 	//Style->Set("Flax_exporter.GenerateMaterialColor", new IMAGE_BRUSH_SVG(TEXT("PlaceholderButtonIcon"), Icon20x20));
 	return Style;
 }
