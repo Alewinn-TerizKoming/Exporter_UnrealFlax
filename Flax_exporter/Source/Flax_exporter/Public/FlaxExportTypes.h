@@ -11,11 +11,11 @@ struct FLAX_EXPORTER_API FFlaxExportVector3
     GENERATED_BODY()
 
     UPROPERTY()
-        float X;
+        float X = 0.0f;
     UPROPERTY()
-        float Y;
+        float Y = 0.0f;
     UPROPERTY()
-        float Z;
+        float Z = 0.0f;
 };
 
 USTRUCT()
@@ -24,11 +24,11 @@ struct FLAX_EXPORTER_API FFlaxExportRotation
     GENERATED_BODY()
 
     UPROPERTY()
-        float Pitch;
+        float Pitch = 0.0f;
     UPROPERTY()
-        float Yaw;
+        float Yaw = 0.0f;
     UPROPERTY()
-        float Roll;
+        float Roll = 0.0f;
 };
 
 USTRUCT()
@@ -37,17 +37,17 @@ struct FLAX_EXPORTER_API FFlaxExportActorProperties
     GENERATED_BODY()
 
     UPROPERTY()
-        bool Visibility;
+        bool Visibility = false;
     UPROPERTY()
-        bool HiddenInGame;
+        bool HiddenInGame = false;
     UPROPERTY()
-        FString Mobility;
+        FString Mobility = "";
     UPROPERTY()
-        bool CastShadow;
+        bool CastShadow = false;
     UPROPERTY()
-        TArray<FString> Tags;
+        TArray<FString> Tags ;
     UPROPERTY()
-        FString Layer;
+        FString Layer = "";
 };
 
 USTRUCT()
@@ -56,9 +56,9 @@ struct FLAX_EXPORTER_API FFlaxExportStaticMesh
     GENERATED_BODY()
 
     UPROPERTY()
-        FString AssetPath;
+        FString AssetPath = "";
     UPROPERTY()
-        FString Name;
+        FString Name = "";
 
     bool operator==(const FFlaxExportStaticMesh& Other) const
     {
@@ -72,13 +72,13 @@ struct FLAX_EXPORTER_API FFlaxExportMaterialSlot
     GENERATED_BODY()
 
     UPROPERTY()
-        FString AssetPath;
+        FString AssetPath = "";
     UPROPERTY()
-        FString Name;
+        FString Name = "";
     UPROPERTY()
-        FString ParentMaterial;
+        FString ParentMaterial = "";
     UPROPERTY()
-        FString Color;
+        FString Color = "";
 
     bool operator==(const FFlaxExportMaterialSlot& Other) const
     {
@@ -92,21 +92,21 @@ struct FLAX_EXPORTER_API FFlaxExportMeshInstance
     GENERATED_BODY()
 
     UPROPERTY()
-        FString Name;
+        FString Name = "";
     UPROPERTY()
-        FString Folder;
+        FString Folder = "";
     UPROPERTY()
-        int32 Mesh;
+        int32 Mesh = 0;
     UPROPERTY()
-        FVector Location;
+        FVector Location = FVector::ZeroVector;
     UPROPERTY()
-        FRotator Rotation;
+        FRotator Rotation = FRotator::ZeroRotator;
     UPROPERTY()
-        FVector Scale;
+        FVector Scale = FVector::ZeroVector;
     UPROPERTY()
-        FFlaxExportActorProperties Properties;
+        FFlaxExportActorProperties Properties ;
     UPROPERTY()
-        TArray<int32> Materials;
+        TArray<int32> Materials ;
 };
 
 USTRUCT()
@@ -115,12 +115,12 @@ struct FLAX_EXPORTER_API FFlaxExportScene
     GENERATED_BODY()
 
     UPROPERTY()
-        FString SceneName;
+        FString SceneName = "";
     UPROPERTY()
-        TArray<FFlaxExportStaticMesh> StaticMeshes;
+        TArray<FFlaxExportStaticMesh> StaticMeshes ;
     UPROPERTY()
-        TArray<FFlaxExportMeshInstance> MeshInstances;
+        TArray<FFlaxExportMeshInstance> MeshInstances ;
     UPROPERTY()
-        TArray<FFlaxExportMaterialSlot> Materials;
+        TArray<FFlaxExportMaterialSlot> Materials ;
 };
 
