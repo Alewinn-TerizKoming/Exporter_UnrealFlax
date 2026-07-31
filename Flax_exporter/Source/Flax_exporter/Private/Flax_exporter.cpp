@@ -28,6 +28,7 @@
 #include "IContentBrowserSingleton.h"
 
 #include "MatGraphTools.h"
+#include "Exporters/MeshExporter.h"
 
 static const FName Flax_exporterTabName("Flax_exporter");
 
@@ -91,72 +92,10 @@ void FFlax_exporterModule::ExportScene(UWorld* World)
 
 	for (TActorIterator<AActor> ActorItr(World); ActorItr; ++ActorItr)
 	{
-		AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(*ActorItr);
-
-		if (!StaticMeshActor)
+		if (AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(*ActorItr))
 		{
-			continue;
+			MeshExporter::Export(StaticMeshActor,Scene);
 		}
-
-		UStaticMeshComponent* MeshComponent = StaticMeshActor->GetStaticMeshComponent();
-
-		if (!MeshComponent)
-		{
-			continue;
-		}
-
-		UStaticMesh* Mesh = MeshComponent->GetStaticMesh();
-
-		if (!Mesh)
-		{
-			continue;
-		}
-
-		FFlaxExportStaticMesh StaticMesh;
-
-		StaticMesh.AssetPath = Mesh->GetPathName();
-		StaticMesh.Name = Mesh->GetName();
-
-		int32 MeshIndex = Scene.StaticMeshes.AddUnique(StaticMesh);
-
-		FFlaxExportMeshInstance Instance;
-
-		Instance.Name = StaticMeshActor->GetActorLabel();
-		Instance.Folder = StaticMeshActor->GetFolderPath().ToString();
-
-		if (Instance.Name.IsEmpty())
-		{
-			Instance.Name = StaticMeshActor->GetName();
-		}
-
-		Instance.Mesh = MeshIndex;
-
-		FTransform Transform = StaticMeshActor->GetActorTransform();
-
-		Instance.Location = Transform.GetLocation();
-		Instance.Rotation = Transform.GetRotation().Rotator();
-		Instance.Scale = Transform.GetScale3D();
-		Instance.Properties = ExtractActorProperties(StaticMeshActor, MeshComponent);
-
-		for (int32 i = 0; i < MeshComponent->GetNumMaterials(); i++)
-		{
-			UMaterialInterface* Material = nullptr;
-
-			if (MeshComponent->OverrideMaterials.IsValidIndex(i) &&
-				MeshComponent->OverrideMaterials[i])
-			{
-				Material = MeshComponent->OverrideMaterials[i];
-			}
-			else
-			{
-				Material = MeshComponent->GetMaterial(i);
-			}
-
-			int32 MaterialIndex = RegisterMaterial(Material, Scene);
-			if (MaterialIndex >= 0) { Instance.Materials.Add(MaterialIndex); }
-		}
-
-		Scene.MeshInstances.Add(Instance);
 	}
 
 	const FString ExportFolder = ChooseExportFolder();
@@ -169,7 +108,7 @@ void FFlax_exporterModule::ExportScene(UWorld* World)
 	SaveScene(Scene, ExportFolder);
 	ExportStaticMeshes(Scene, ExportFolder);
 
-	UE_LOG(LogTemp,Log,TEXT("Export scene completed."));
+	UE_LOG(LogTemp, Log, TEXT("Export scene completed."));
 }
 
 FString FFlax_exporterModule::ChooseExportFolder()
@@ -196,77 +135,6 @@ FString FFlax_exporterModule::ChooseExportFolder()
 	}
 
 	return FString();
-}
-
-
-
-FFlaxExportActorProperties FFlax_exporterModule::ExtractActorProperties(AStaticMeshActor* Actor, UStaticMeshComponent* MeshComponent)
-{
-	FFlaxExportActorProperties Properties;
-
-	// Visibility
-	Properties.Visibility = MeshComponent->IsVisible();
-
-	// Hidden in game
-	Properties.HiddenInGame = Actor->IsHidden() || MeshComponent->bHiddenInGame;
-
-	// Mobility
-	switch (MeshComponent->Mobility)
-	{
-	case EComponentMobility::Static:
-		Properties.Mobility = TEXT("Static");
-		break;
-
-	case EComponentMobility::Stationary:
-		Properties.Mobility = TEXT("Stationary");
-		break;
-
-	case EComponentMobility::Movable:
-		Properties.Mobility = TEXT("Movable");
-		break;
-
-	default:
-		Properties.Mobility = TEXT("");
-		break;
-	}
-
-	// Shadows
-	Properties.CastShadow = MeshComponent->CastShadow;
-
-	// Tags
-	for (const FName& Tag : Actor->Tags)
-	{
-		Properties.Tags.Add(Tag.ToString());
-	}
-
-	// Layer
-	// Not handled yet
-	Properties.Layer = TEXT("");
-
-	return Properties;
-}
-
-int32 FFlax_exporterModule::RegisterMaterial(UMaterialInterface* Material,FFlaxExportScene& Scene)
-{
-	if (!Material){ return -1; }
-
-	FFlaxExportMaterialSlot Slot;
-
-	Slot.AssetPath = Material->GetPathName();
-	Slot.Name = Material->GetName();
-	Slot.Color = MatGraphTools::GetColor(Material);
-
-	UMaterialInstance* Instance = Cast<UMaterialInstance>(Material);
-
-	if (Instance && Instance->Parent)
-	{
-		Slot.ParentMaterial = Instance->Parent->GetPathName();
-
-		// Add parent to the list
-		RegisterMaterial( Instance->Parent, Scene);
-	}
-
-	return Scene.Materials.AddUnique(Slot);
 }
 
 bool FFlax_exporterModule::SaveScene(const FFlaxExportScene& Scene, const FString& ExportFolder)
@@ -313,7 +181,7 @@ void FFlax_exporterModule::ExportStaticMeshes(const FFlaxExportScene& Scene, con
 	}
 }
 
-bool FFlax_exporterModule::WriteSceneJson(const FFlaxExportScene& Scene,const FString& Filename)
+bool FFlax_exporterModule::WriteSceneJson(const FFlaxExportScene& Scene, const FString& Filename)
 {
 	FString Json;
 
@@ -326,7 +194,7 @@ bool FFlax_exporterModule::WriteSceneJson(const FFlaxExportScene& Scene,const FS
 
 	if (bSaved)
 	{
-		UE_LOG(LogTemp,Log,TEXT("Scene written to %s"),*Filename);
+		UE_LOG(LogTemp, Log, TEXT("Scene written to %s"), *Filename);
 	}
 
 	return bSaved;
@@ -346,7 +214,7 @@ void FFlax_exporterModule::RegisterMenus()
 		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar.PlayToolBar");
 		FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("PluginTools");
 
-		FToolMenuEntry& Entry = Section.AddEntry( FToolMenuEntry::InitToolBarButton( FFlax_exporterCommands::Get().PluginAction));
+		FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FFlax_exporterCommands::Get().PluginAction));
 
 		Entry.SetCommandList(PluginCommands);
 	}
