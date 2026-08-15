@@ -276,6 +276,8 @@ struct FLAX_EXPORTER_API FFlaxExportScene
     UPROPERTY()
         FString SceneName = "";
     UPROPERTY()
+        FString From = "";
+    UPROPERTY()
         TArray<FFlaxExportStaticMesh> StaticMeshes ;
     UPROPERTY()
         TArray<FFlaxExportMeshInstance> MeshInstances ;

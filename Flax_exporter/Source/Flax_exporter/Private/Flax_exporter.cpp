@@ -89,6 +89,7 @@ void FFlax_exporterModule::ExportScene(UWorld* World)
 	FFlaxExportScene Scene;
 
 	Scene.SceneName = FPackageName::GetShortName(World->GetPackage()->GetName());
+	Scene.From = TEXT("Unreal");
 
 	for (TActorIterator<AActor> ActorItr(World); ActorItr; ++ActorItr)
 	{
@@ -140,6 +141,7 @@ FString FFlax_exporterModule::ChooseExportFolder()
 bool FFlax_exporterModule::SaveScene(const FFlaxExportScene& Scene, const FString& ExportFolder)
 {
 	const FString SceneFilename = ExportFolder / (Scene.SceneName + TEXT(".json"));
+
 	return WriteSceneJson(Scene, SceneFilename);
 }
 
